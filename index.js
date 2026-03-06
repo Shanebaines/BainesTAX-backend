@@ -1,7 +1,6 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 import mongoose from 'mongoose';
-import Student from './models/Students.js';
 import studentRouter from './routes/studentRouter.js';
 import productRouter from './routes/productRouter.js';
 import userRouter from './routes/UserRouter.js';
@@ -30,7 +29,7 @@ app.use(
 
 )
 
-app.use('/api/students', studentRouter);
+
 app.use('/api/products', productRouter);
 app.use('/api/users', userRouter);
 
