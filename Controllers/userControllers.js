@@ -35,6 +35,12 @@ export function loginUser(req, res) {
     }).catch((err) => {
         res.status(500).json({ error: err.message });
     }); 
-
-
 }
+
+export function deleteUser(req, res) {
+    User.deleteOne({ email: req.params.email }).then(() => {
+        res.status(200).json({ message: 'User deleted' });
+    }).catch((err) => {
+        res.status(500).json({ error: err.message });
+    });
+}   
