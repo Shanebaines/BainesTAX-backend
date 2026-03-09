@@ -1,6 +1,10 @@
 import User from '../models/User.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 
 export function createUser(req, res) {
     const newUserData = req.body;
@@ -25,7 +29,8 @@ export function loginUser(req, res) {
             if(isPasswordValid) {
                 const token = jwt.sign(
                 { firstName: user.FirstName, lastName: user.LastName, email: user.email, type: user.Type, isBlocked: user.isBlocked },
-                    'BainesTAX');
+                    process.env.Secret_Key_FOR_TOKEN,
+                    );
                     res.status(200).json({ token: token });
                 }
             else {

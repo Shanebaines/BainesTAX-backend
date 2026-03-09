@@ -1,13 +1,16 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 import mongoose from 'mongoose';
-import studentRouter from './routes/studentRouter.js';
 import productRouter from './routes/productRouter.js';
 import userRouter from './routes/UserRouter.js';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 
 const app = express();
-const mongourl = 'mongodb+srv://Shane_Baines:1740@cluster0.yu1afco.mongodb.net/?appName=Cluster0';
+const mongourl = process.env.MONGO_DB_URL;
 
 //middlewares
 app.use(bodyParser.json());
@@ -16,7 +19,7 @@ app.use(
        const token = req.headers['authorization']?.replace('Bearer ', '');
          if(token) {
              try {
-                 const decoded = jwt.verify(token, 'BainesTAX');
+                 const decoded = jwt.verify(token, process.env.Secret_Key_FOR_TOKEN);
                  req.user = decoded;
                  next();
              } catch (error) {
