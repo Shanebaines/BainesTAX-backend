@@ -2,6 +2,8 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import mongoose from 'mongoose';
 import userRouter from './routes/UserRouter.js';
+import productRouter from './routes/ProductRouters.js';
+import orderRouter from './routes/OrderRoutes.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
@@ -48,7 +50,8 @@ app.use(
 )
 
 app.use('/api/users', userRouter);
-
+app.use('/api/products', productRouter);
+app.use('/api/orders', orderRouter);
 
 function startServer() {
     mongoose

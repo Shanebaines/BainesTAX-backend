@@ -53,4 +53,18 @@ export function loginUser(req, res) {
     }); 
 }
 
- 
+export async function isCustomer(req, res, next) {
+    if (req.user && req.user.type === 'Customer')
+        return next();
+    else
+        return res.status(403).json({ error: 'Access denied, only Customers can access this route' });
+}
+
+export async function isAdmin(req, res, next) {
+    if (req.user && req.user.type === 'Admin')
+        return next();
+    else
+        return res.status(403).json({ error: 'Access denied, only Admins can access this route' });
+}   
+
+
