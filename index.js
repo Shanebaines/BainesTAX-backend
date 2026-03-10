@@ -1,7 +1,6 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 import mongoose from 'mongoose';
-import productRouter from './routes/productRouter.js';
 import userRouter from './routes/UserRouter.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -14,8 +13,24 @@ const mongourl = process.env.MONGO_DB_URL;
 
 //middlewares
 app.use(bodyParser.json());
+
 app.use(
     (req, res, next) => {
+        // 1) Login never needs a token.
+        if (req.method === 'POST' && req.path === '/api/users/login') {
+            return next();
+        }
+
+        // 2) Creating a NON-Admin user does not need a token.
+        //    If Type === 'Admin', we require a token (checked below).
+        if (
+            req.method === 'POST' &&
+            req.path === '/api/users' &&
+            req.body?.Type !== 'Admin'
+        ) {
+            return next();
+        }
+
        const token = req.headers['authorization']?.replace('Bearer ', '');
          if(token) {
              try {
@@ -32,8 +47,6 @@ app.use(
 
 )
 
-
-app.use('/api/products', productRouter);
 app.use('/api/users', userRouter);
 
 
