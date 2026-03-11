@@ -5,8 +5,6 @@ export async function createOrder(req, res) {
         return res.status(403).json({ error: 'Only customers can create orders' });
     }
 
-    const newOrderData = req.body;
-
     try {
         const latestOrder = await Order.findOne().sort({ orderID: -1 });
 
@@ -19,18 +17,17 @@ export async function createOrder(req, res) {
             orderId = `BTAX-${newNumber.toString().padStart(4, '0')}`;
         }
 
-        const newOrder = new Order({
-            orderID: orderId,
-            email: req.user.email,
-            orderedItems: newOrderData.orderedItems,
-            nameOfTheClient: newOrderData.nameOfTheClient,
-            phoneNumber: newOrderData.phoneNumber,
-            paymentMethod: newOrderData.paymentMethod,
-            notes: newOrderData.notes,
-        });
+        const newOrderData = req.body;
+        newOrderData.orderID = orderId;
+        newOrderData.email = req.user.email;
 
-        await newOrder.save();
-        return res.status(201).json(newOrder);
+        const order = new Order(newOrderData);
+        const savedOrder = await order.save();
+
+        return res.status(201).json({
+            message: 'Order created successfully',
+            order: savedOrder,
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Failed to create order' });
@@ -58,5 +55,20 @@ export async function getOrders(req, res) {
         }
     } else {
         res.status(403).json({ error: 'Access denied' });
+    }
+}
+
+export async function deleteOrder(req, res) {
+    const orderID = req.params.orderID;
+    try {
+        const deletedOrder = await Order.findOneAndDelete({ orderID: orderID });
+        if (deletedOrder) {
+            res.status(200).json({ message: 'Order deleted successfully' });
+        } else {
+            res.status(404).json({ error: 'Order not found' });
+        }   
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to delete order' });
     }
 }

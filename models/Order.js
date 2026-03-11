@@ -11,6 +11,7 @@ const orderSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    // Ordered products cart
     orderedItems:[
         {
             ProductName: {
@@ -41,7 +42,9 @@ const orderSchema = new mongoose.Schema({
     paymentMethod: {
         type: String,
     },
-
+    paymentId: {
+        type: String,
+    },
     orderDate: {
         type: Date,
         default: Date.now,

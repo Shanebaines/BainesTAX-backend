@@ -2,7 +2,7 @@ import Product from "../models/Product.js";
 
 export function createProduct(req, res) {
     if (req.user.type !== 'Admin') {
-        return res.status(403).json({ error: 'Access denied, only Admins van add products' });
+        return res.status(403).json({ error: 'Access denied, only Admins can add products' });
     }
     const newProductData = req.body;
     const product = new Product(newProductData);
@@ -17,7 +17,7 @@ export function createProduct(req, res) {
 
 export async function deleteProduct(req, res) {
     if (req.user.type !== 'Admin') {
-        return res.status(403).json({ error: 'Access denied, only Admins van delete products' });
+        return res.status(403).json({ error: 'Access denied, only Admins can delete products' });
     }
     const productID = req.params.productID;
     Product.findOneAndDelete({ productID: productID }).then((deletedProduct) => {
