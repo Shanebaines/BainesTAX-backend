@@ -7,7 +7,7 @@ export function createProduct(req, res) {
     const newProductData = req.body;
     const product = new Product(newProductData);
     product.save().then((savedProduct) => {
-        res.status(201).json(savedProduct);
+        res.status(201).json({ message: 'Product added successfully', product: savedProduct });
     }
     ).catch((err) => {
         res.status(400).json({ error: err.message });

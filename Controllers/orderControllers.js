@@ -1,4 +1,5 @@
 import Order from '../models/Order.js';
+import Product from '../models/Product.js';
 
 export async function createOrder(req, res) {
     if (!req.user || req.user.type !== 'Customer') {
@@ -18,6 +19,108 @@ export async function createOrder(req, res) {
         }
 
         const newOrderData = req.body;
+
+        if (!Array.isArray(newOrderData.orderedItems) || newOrderData.orderedItems.length === 0) {
+            return res.status(400).json({ error: 'orderedItems is required and cannot be empty' });
+        }
+
+        const availableItems = [];
+        const unavailableItems = [];
+
+        for (const item of newOrderData.orderedItems) {
+            const productId = item.ProductId || item.productId || item.productID;
+            const quantity = Number(item.Quantity);
+
+            if (!productId) {
+                unavailableItems.push({
+                    ProductId: null,
+                    Quantity: item.Quantity,
+                    reason: 'ProductId is required',
+                });
+                continue;
+            }
+
+            if (!Number.isInteger(quantity) || quantity <= 0) {
+                unavailableItems.push({
+                    ProductId: productId,
+                    Quantity: item.Quantity,
+                    reason: 'Invalid quantity',
+                });
+                continue;
+            }
+
+            const product = await Product.findOne({ productID: productId });
+            if (!product) {
+                unavailableItems.push({
+                    ProductId: productId,
+                    Quantity: quantity,
+                    reason: 'Product not found',
+                });
+                continue;
+            }
+
+            if (product.stock < quantity) {
+                unavailableItems.push({
+                    ProductId: productId,
+                    Quantity: quantity,
+                    availableStock: product.stock,
+                    reason: 'Insufficient stock',
+                });
+                continue;
+            }
+
+            availableItems.push({
+                productId,
+                quantity,
+                orderItem: {
+                    ProductName: product.productName,
+                    price: product.price,
+                    Quantity: quantity,
+                    image: Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : '',
+                },
+            });
+        }
+
+        if (availableItems.length === 0) {
+            return res.status(400).json({
+                message: 'No available products to place this order',
+                unavailableItems,
+            });
+        }
+
+        const stockUpdatedItems = [];
+        for (const item of availableItems) {
+            const updatedProduct = await Product.findOneAndUpdate(
+                { productID: item.productId, stock: { $gte: item.quantity } },
+                { $inc: { stock: -item.quantity } },
+                { new: true }
+            );
+
+            if (!updatedProduct) {
+                unavailableItems.push({
+                    ProductId: item.productId,
+                    Quantity: item.quantity,
+                    reason: 'Insufficient stock during update',
+                });
+            } else {
+                stockUpdatedItems.push(item);
+            }
+        }
+
+        const finalOrderItems = [];
+        for (const item of stockUpdatedItems) {
+            finalOrderItems.push(item.orderItem);
+        }
+
+        if (finalOrderItems.length === 0) {
+            return res.status(400).json({
+                message: 'No available products to place this order',
+                unavailableItems,
+            });
+        }
+
+        newOrderData.orderedItems = finalOrderItems;
+
         newOrderData.orderID = orderId;
         newOrderData.email = req.user.email;
 
@@ -25,8 +128,12 @@ export async function createOrder(req, res) {
         const savedOrder = await order.save();
 
         return res.status(201).json({
-            message: 'Order created successfully',
+            message: unavailableItems.length > 0
+                ? 'Order created with available products only'
+                : 'Order created successfully',
             order: savedOrder,
+            availableItems: savedOrder.orderedItems,
+            unavailableItems,
         });
     } catch (error) {
         console.error(error);
