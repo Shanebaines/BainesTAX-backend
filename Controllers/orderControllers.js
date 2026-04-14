@@ -20,6 +20,12 @@ export async function createOrder(req, res) {
 
         const newOrderData = req.body;
 
+        if (!newOrderData.nameOfTheClient || !newOrderData.phoneNumber) {
+            return res.status(400).json({
+                error: 'nameOfTheClient and phoneNumber are required',
+            });
+        }
+
         if (!Array.isArray(newOrderData.orderedItems) || newOrderData.orderedItems.length === 0) {
             return res.status(400).json({ error: 'orderedItems is required and cannot be empty' });
         }
@@ -137,7 +143,10 @@ export async function createOrder(req, res) {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: 'Failed to create order' });
+        return res.status(500).json({
+            error: 'Failed to create order',
+            details: error.message,
+        });
     }
 }
 

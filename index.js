@@ -18,8 +18,10 @@ app.use(bodyParser.json());
 
 app.use(
     (req, res, next) => {
+        const normalizedPath = req.path.replace(/\/+$/, '') || '/';
+
         // 1) Login never needs a token.
-        if (req.method === 'POST' && req.path === '/api/users/login') {
+        if (req.method === 'POST' && normalizedPath === '/api/users/login') {
             return next();
         }
 
@@ -27,7 +29,7 @@ app.use(
         //    If Type === 'Admin', we require a token (checked below).
         if (
             req.method === 'POST' &&
-            req.path === '/api/users' &&
+            normalizedPath === '/api/users' &&
             req.body?.Type !== 'Admin'
         ) {
             return next();
