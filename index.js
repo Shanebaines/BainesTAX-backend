@@ -6,6 +6,7 @@ import productRouter from './routes/ProductRouters.js';
 import orderRouter from './routes/OrderRoutes.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import cors from "cors";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ const mongourl = process.env.MONGO_DB_URL;
 
 //middlewares
 app.use(bodyParser.json());
+app.use(cors());
 
 app.use(
     (req, res, next) => {
