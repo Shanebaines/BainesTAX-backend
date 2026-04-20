@@ -25,8 +25,11 @@ export function createUser(req, res) {
 }
 
 export function loginUser(req, res) {
+    console.log('Login attempt received:', { email: req.body.email })
+
     User.find({ email: req.body.email }).then((users) => {
         if(users.length == 0) {
+            console.log('Login failed: user not found', { email: req.body.email })
             return res.status(404).json({ error: 'User not found' });
         }
         else {
@@ -37,7 +40,19 @@ export function loginUser(req, res) {
                 { firstName: user.FirstName, lastName: user.LastName, email: user.email, type: user.Type, isBlocked: user.isBlocked },
                     process.env.Secret_Key_FOR_TOKEN,
                     );
-                    res.status(200).json({ token: token });
+                    const responseBody = {
+                        token: token,
+                        user: {
+                            firstName: user.FirstName,
+                            lastName: user.LastName,
+                            email: user.email,
+                            type: user.Type,
+                            isBlocked: user.isBlocked,
+                        },
+                    };
+
+                    console.log('Login success response:', responseBody)
+                    res.status(200).json(responseBody);
                     console.log({
                         firstName: user.FirstName,
                         lastName: user.LastName,
@@ -45,6 +60,7 @@ export function loginUser(req, res) {
                     })
                 }
             else {
+                console.log('Login failed: invalid password', { email: req.body.email })
                 res.status(401).json({ error: 'Invalid password' });
             }
         }
