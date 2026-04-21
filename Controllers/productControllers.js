@@ -15,6 +15,28 @@ export function createProduct(req, res) {
     );
 }
 
+export async function updateProduct(req, res) {
+    if (req.user.type !== 'Admin') {
+        return res.status(403).json({ error: 'Access denied, only Admins can update products' });
+    }
+    const productID = req.params.productID;
+    const updateData = req.body;
+    
+    Product.findOneAndUpdate(
+        { productID: productID },
+        updateData,
+        { new: true, runValidators: true }
+    ).then((updatedProduct) => {
+        if (updatedProduct) {
+            res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
+        } else {
+            res.status(404).json({ error: 'Product not found' });
+        }
+    }).catch((err) => {
+        res.status(400).json({ error: err.message });
+    });
+}
+
 export async function deleteProduct(req, res) {
     if (req.user.type !== 'Admin') {
         return res.status(403).json({ error: 'Access denied, only Admins can delete products' });
