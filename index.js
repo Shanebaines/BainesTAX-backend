@@ -37,6 +37,11 @@ app.use(
             return next();
         }
 
+        // 3) Product browsing is public.
+        if (req.method === 'GET' && normalizedPath.startsWith('/api/products')) {
+            return next();
+        }
+
        const token = req.headers['authorization']?.replace('Bearer ', '');
          if(token) {
              try {
