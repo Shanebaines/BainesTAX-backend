@@ -110,3 +110,17 @@ export async function getProducts(req, res)
         res.status(500).json({ error: err.message });
     });
 }
+
+export async function getProductById(req, res)
+{
+    const productID = req.params.productID;
+    Product.findOne({ productID: productID }).then((product) => {
+        if (product) {
+            res.status(200).json(product);
+        } else {
+            res.status(404).json({ error: 'Product not found' });
+        }
+    }).catch((err) => {
+        res.status(500).json({ error: err.message });
+    });
+}
