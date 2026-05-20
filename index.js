@@ -23,7 +23,7 @@ app.use(
         const normalizedPath = req.path.replace(/\/+$/, '') || '/';
 
         // 1) Login never needs a token.
-        if (req.method === 'POST' && normalizedPath === '/api/users/login') {
+        if (req.method === 'POST' && (normalizedPath === '/api/users/login' || normalizedPath === '/api/users/google-login')) {
             return next();
         }
 
